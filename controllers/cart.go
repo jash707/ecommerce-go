@@ -115,8 +115,8 @@ func GetItemFromCart() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		var filledcart models.User
-		err := UserCollection.FindOne(ctx, bson.D{primitive.E{Key: "_id", Value: usert_id}}).Decode(&filledcart)
+		var filledCart models.User
+		err := UserCollection.FindOne(ctx, bson.D{primitive.E{Key: "_id", Value: usert_id}}).Decode(&filledCart)
 		if err != nil {
 			log.Println(err)
 			c.IndentedJSON(http.StatusInternalServerError, "not found")
@@ -124,21 +124,21 @@ func GetItemFromCart() gin.HandlerFunc {
 
 		filter_match := bson.D{{Key: "$match", Value: bson.D{primitive.E{Key: "_id", Value: usert_id}}}}
 		unwind := bson.D{{Key: "$unwind", Value: bson.D{primitive.E{Key: "path", Value: "$usercart"}}}}
-		grouping := bson.D{{Key: "$group", Value: bson.D{primitive.E{Key: "_id", Value: "_id"}, {Key: "total", Value: bson.D{primitive.E{Key: "$sum", Value: "$usercart.price"}}}}}}
-		pointcursor, err := UserCollection.Aggregate(ctx, mongo.Pipeline{filter_match, unwind, grouping})
+		group := bson.D{{Key: "$group", Value: bson.D{primitive.E{Key: "_id", Value: "_id"}, {Key: "total", Value: bson.D{primitive.E{Key: "$sum", Value: "$usercart.price"}}}}}}
+		pointCursor, err := UserCollection.Aggregate(ctx, mongo.Pipeline{filter_match, unwind, group})
 		if err != nil {
 			log.Println(err)
 		}
 
 		var listing []bson.M
-		if err = pointcursor.All(ctx, &listing); err != nil {
+		if err = pointCursor.All(ctx, &listing); err != nil {
 			log.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 		}
 
 		for _, json := range listing {
 			c.IndentedJSON(http.StatusOK, json["total"])
-			c.IndentedJSON(http.StatusOK, filledcart.UserCart)
+			c.IndentedJSON(http.StatusOK, filledCart.UserCart)
 		}
 		ctx.Done()
 	}

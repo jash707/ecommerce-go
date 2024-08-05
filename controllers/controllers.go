@@ -100,7 +100,7 @@ func SignUp() gin.HandlerFunc {
 		user.Address_Details = make([]models.Address, 0)
 		user.Order_Status = make([]models.Order, 0)
 
-		_, insertErr := UserCollection.insertOne(ctx, user)
+		_, insertErr := UserCollection.InsertOne(ctx, user)
 		if insertErr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "the user did not get created"})
 			return

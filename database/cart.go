@@ -81,9 +81,14 @@ func BuyItemFromCart(ctx context.Context, userCollection *mongo.Collection, user
 	var getCartItems models.User
 	var orderCart models.Order
 
+	err = userCollection.FindOne(ctx, bson.D{primitive.E{Key: "_id", Value: id}}).Decode(&getCartItems)
+	if err != nil {
+		log.Println(err)
+	}
+
 	orderCart.Order_ID = primitive.NewObjectID()
 	orderCart.Ordered_At = time.Now()
-	orderCart.Order_Cart = make([]models.ProductUser, 0)
+	orderCart.Order_Cart = getCartItems.UserCart
 	orderCart.Payment_Method.COD = true
 
 	unwind := bson.D{{Key: "$unwind", Value: bson.D{primitive.E{Key: "path", Value: "$usercart"}}}}
@@ -113,22 +118,16 @@ func BuyItemFromCart(ctx context.Context, userCollection *mongo.Collection, user
 		log.Println(err)
 	}
 
-	err = userCollection.FindOne(ctx, filter).Decode(&getCartItems)
-	if err != nil {
-		log.Println(err)
-	}
-
-	filter2 := bson.D{primitive.E{Key: "_id", Value: id}}
-	update2 := bson.M{"$push": bson.M{"orders.$[].order_list": bson.M{"$each": getCartItems.UserCart}}}
-	_, err = userCollection.UpdateOne(ctx, filter2, update2)
-	if err != nil {
-		log.Println(err)
-	}
+	// filter2 := bson.D{primitive.E{Key: "_id", Value: id}}
+	// update2 := bson.M{"$push": bson.M{"orders.$[].order_list": bson.M{"$each": getCartItems.UserCart}}}
+	// _, err = userCollection.UpdateOne(ctx, filter2, update2)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
 	userCart_empty := make([]models.ProductUser, 0)
-	filter3 := bson.D{primitive.E{Key: "_id", Value: id}}
 	update3 := bson.D{{Key: "$set", Value: bson.D{primitive.E{Key: "usercart", Value: userCart_empty}}}}
-	_, err = userCollection.UpdateOne(ctx, filter3, update3)
+	_, err = userCollection.UpdateOne(ctx, filter, update3)
 	if err != nil {
 		return ErrCantBuyCartItem
 	}

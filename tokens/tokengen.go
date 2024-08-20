@@ -1,4 +1,4 @@
-package tokens
+package token
 
 import (
 	"context"
@@ -43,16 +43,15 @@ func TokenGenerator(email string, firstName string, lastName string, uid string)
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(168)).Unix(),
 		},
 	}
-
-	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).SignedString([]byte(SECRET_KEY))
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
 	if err != nil {
 		return "", "", err
 	}
 
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
 	if err != nil {
-		log.Panic(err)
-		return "", "", err
+		log.Panicln(err)
+		return
 	}
 
 	return token, refreshToken, err
@@ -70,12 +69,11 @@ func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
 
 	claims, ok := token.Claims.(*SignedDetails)
 	if !ok {
-		msg = "the token is invalid"
+		msg = "The Token is invalid"
 		return
 	}
-
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		msg = "the token is already expired"
+		msg = "Token is expired"
 		return
 	}
 
@@ -103,5 +101,7 @@ func UpdateAllTokens(signedToken string, signedRefreshToken string, userId strin
 	defer cancel()
 	if err != nil {
 		log.Panic(err)
+		return
 	}
+
 }

@@ -101,7 +101,7 @@ func (app *Application) RemoveItem() gin.HandlerFunc {
 
 func GetItemFromCart() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user_id := c.Query("id")
+		user_id := c.Query("userID")
 
 		if user_id == "" {
 			c.Header("Content-Type", "application/json")

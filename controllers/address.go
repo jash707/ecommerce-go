@@ -15,7 +15,7 @@ import (
 
 func AddAddress() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user_id := c.Query("id")
+		user_id := c.Query("userID")
 		if user_id == "" {
 			c.Header("Content-Type", "application/json")
 			c.JSON(http.StatusNotFound, gin.H{"error": "Invalid search index"})
@@ -72,7 +72,7 @@ func AddAddress() gin.HandlerFunc {
 
 func EditHomeAddress() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user_id := c.Query("id")
+		user_id := c.Query("userID")
 
 		if user_id == "" {
 			c.Header("Content-Type", "application/json")
@@ -106,7 +106,7 @@ func EditHomeAddress() gin.HandlerFunc {
 
 func EditWorkAddress() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user_id := c.Query("id")
+		user_id := c.Query("userID")
 
 		if user_id == "" {
 			c.Header("Content-Type", "application/json")
@@ -139,7 +139,7 @@ func EditWorkAddress() gin.HandlerFunc {
 
 func DeleteAddress() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user_id := c.Query("id")
+		user_id := c.Query("userID")
 
 		if user_id == "" {
 			c.Header("Content-Type", "application/json")

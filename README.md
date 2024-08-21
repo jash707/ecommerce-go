@@ -1,7 +1,5 @@
 # Ecommerce-Backend
 
-[![Build Status](https://travis-ci.com/yourusername/yourrepository.svg?branch=main)](https://travis-ci.com/yourusername/yourrepository)
-
 ## Overview
 
 This repository contains the backend code for an e-commerce application, including user authentication, product management, cart functionality, and more. The APIs are documented below, covering various aspects of the system, such as cart management, address handling, and user authentication.

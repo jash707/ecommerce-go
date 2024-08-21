@@ -84,7 +84,7 @@ Before you start, ensure you have the following installed on your machine:
 
   - `token`: JWT token for authentication
 
-### 2. Address Management
+### Address Management
 
 - **Add Address**
 
@@ -106,6 +106,13 @@ Before you start, ensure you have the following installed on your machine:
     "pin_code": "332423432"
   }
   ```
+
+  **Note:**
+  The Address array is limited to two values: **Home** and **Work** addresses.
+
+  - The **first** address added will be saved as the **Home** address.
+  - The **second** address added will be saved as the **Work** address.
+  - Adding more than two addresses is not acceptable.
 
 - **Edit Home Address**
 

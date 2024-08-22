@@ -159,7 +159,7 @@ Before you start, ensure you have the following installed on your machine:
 - **Delete Addresses**
 
   ```http
-  GET /deleteaddresses?userID=<userID>
+  PUT /deleteaddresses?userID=<userID>
   ```
 
   **Headers:**

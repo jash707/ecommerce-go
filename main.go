@@ -18,8 +18,7 @@ func main() {
 	}
 	app := controllers.NewApplication(database.ProductData(database.Client, "Products"), database.UserData(database.Client, "Users"))
 
-	router := gin.New()
-	router.Use(gin.Logger())
+	router := gin.Default()
 
 	routes.UserRoutes(router)
 	router.Use(middleware.Authentication())

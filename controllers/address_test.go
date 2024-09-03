@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -81,6 +82,76 @@ func TestAddAddress(t *testing.T) {
 
 	// Verify the response body (you can add more checks depending on your needs)
 	expectedResponse := "\"Successfully added the address\""
+	assert.Equal(t, expectedResponse, recorder.Body.String())
+}
+
+func TestEditHomeAddress(t *testing.T) {
+	// Initialize Gin in test mode
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+
+	// Set up the route for the EditHomeAddress handler
+	router.PUT("/edithomeaddress", EditHomeAddress())
+
+	// Create a mock initial address and user document
+	mockUserID := primitive.NewObjectID() // Generate a mock user ID
+	mockInitialAddress := models.Address{
+		Address_ID: mockUserID, // Using user ID as the address ID for simplicity
+		House:      stringPtr("123 Initial St"),
+		Street:     stringPtr("Initial City"),
+		City:       stringPtr("Initial State"),
+		Pincode:    stringPtr("11111"),
+	}
+
+	// Create a mock user document with an address array
+	mockUser := models.User{
+		ID:              mockUserID,
+		User_ID:         mockUserID.Hex(),
+		Address_Details: []models.Address{mockInitialAddress},
+	}
+
+	// Insert mock user into the mockUserCollection
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	mockUserCollection = setupMockCollection(t)
+	defer mockUserCollection.Drop(ctx)
+
+	_, err := mockUserCollection.InsertOne(ctx, mockUser)
+	if err != nil {
+		t.Fatalf("could not insert mock user: %v", err)
+	}
+
+	// Create a mock address to edit (the new address data)
+	mockEditAddress := models.Address{
+		House:   stringPtr("456 New Ave"),
+		Street:  stringPtr("New City"),
+		City:    stringPtr("New State"),
+		Pincode: stringPtr("67890"),
+	}
+
+	// Convert mock address to JSON
+	mockEditAddressJSON, _ := json.Marshal(mockEditAddress)
+
+	// Create a new HTTP request with PUT method
+	req, err := http.NewRequest(http.MethodPut, "/edithomeaddress?userID="+mockUser.User_ID, bytes.NewBuffer(mockEditAddressJSON))
+	if err != nil {
+		t.Fatalf("could not create request: %v", err)
+	}
+
+	// Create a response recorder to capture the response
+	recorder := httptest.NewRecorder()
+
+	// Run the handler
+	router.ServeHTTP(recorder, req)
+
+	// Verify that the response status code is 200 OK
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	// Print the actual response body for debugging
+	fmt.Println("Actual Response Body:", recorder.Body.String())
+
+	// Verify the response body matches the expected plain JSON string
+	expectedResponse := "\"Successfully updated the home address\""
 	assert.Equal(t, expectedResponse, recorder.Body.String())
 }
 

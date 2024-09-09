@@ -234,6 +234,74 @@ func TestEditWorkAddress(t *testing.T) {
 	assert.Equal(t, expectedResponse, recorder.Body.String())
 }
 
+func TestDeleteAddresses(t *testing.T) {
+	// Initialize Gin in test mode
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+
+	// Set up the route for the EditHomeAddress handler
+	router.PUT("/deleteaddresses", DeleteAddress())
+
+	// Create a mock initial address and user document
+	mockUserID := primitive.NewObjectID() // Generate a mock user ID
+	mockInitialAddress := []models.Address{
+		{
+			Address_ID: primitive.NewObjectID(),
+			House:      stringPtr("123 Initial St"),
+			Street:     stringPtr("Initial City"),
+			City:       stringPtr("Initial State"),
+			Pincode:    stringPtr("11111"),
+		},
+		{
+			Address_ID: primitive.NewObjectID(),
+			House:      stringPtr("456 Initial Ave"),
+			Street:     stringPtr("Second City"),
+			City:       stringPtr("Second State"),
+			Pincode:    stringPtr("22222"),
+		},
+	}
+
+	// Create a mock user document with an address array
+	mockUser := models.User{
+		ID:              mockUserID,
+		User_ID:         mockUserID.Hex(),
+		Address_Details: mockInitialAddress,
+	}
+
+	// Insert mock user into the mockUserCollection
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	mockUserCollection = setupMockCollection(t)
+	defer mockUserCollection.Drop(ctx)
+
+	_, err := mockUserCollection.InsertOne(ctx, mockUser)
+	if err != nil {
+		t.Fatalf("could not insert mock user: %v", err)
+	}
+
+	// Create a new HTTP request with PUT method
+	req, err := http.NewRequest(http.MethodPut, "/deleteaddresses?userID="+mockUser.User_ID, nil)
+	if err != nil {
+		t.Fatalf("could not create request: %v", err)
+	}
+
+	// Create a response recorder to capture the response
+	recorder := httptest.NewRecorder()
+
+	// Run the handler
+	router.ServeHTTP(recorder, req)
+
+	// Verify that the response status code is 200 OK
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	// Print the actual response body for debugging
+	fmt.Println("Actual Response Body:", recorder.Body.String())
+
+	// Verify the response body matches the expected plain JSON string
+	expectedResponse := "\"Successfully Deleted\""
+	assert.Equal(t, expectedResponse, recorder.Body.String())
+}
+
 // setupMockCollection sets up a mock MongoDB collection
 func setupMockCollection(t *testing.T) *mongo.Collection {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
